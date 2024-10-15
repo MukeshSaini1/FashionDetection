@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Detection</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background: linear-gradient(to right, #e66465, #9198e5);
+            color: #fff;
+        }
+        h1, h2, h3 {
+            color: #fff;
+            text-align: center; /* Centering headers */
+        }
+        form {
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .detected-image-container {
+            border: 5px solid #fff; /* Border around the image */
+            border-radius: 10px;
+            padding: 10px;
+            margin: 20px auto; /* Centering the image container */
+            max-width: 80%; /* Limiting width */
+        }
+        img {
+            max-width: 100%; /* Adjusted for responsive design */
+            height: auto;
+            border-radius: 5px;
+        }
+        .product-card {
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; /* Flexbox for image and text alignment */
+            align-items: flex-start; /* Align items at the start */
+        }
+        .product-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .product-image {
+            max-width: 80px; /* Reduced size */
+            margin-left: 10px; /* Space between image and text */
+        }
+        .btn-primary, .btn-info, .btn-success {
+            border-radius: 5px;
+        }
+        .btn-primary:hover, .btn-info:hover, .btn-success:hover {
+            opacity: 0.9;
+        }
+        .text-danger {
+            color: #ffcc00; /* Custom color for no products found message */
+        }
+        .container {
+            max-width: 800px; /* Limiting overall container width */
+            margin: 0 auto; /* Centering the container */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Upload an Image</h1>
+    <form method="POST" enctype="multipart/form-data" class="text-center">
+        <input type="file" name="file" required="" class="form-control-file mb-3">
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+    {% if result_image %}
+    <h2>Detected Items</h2>
+    <div class="detected-image-container">
+        <img src="{{ result_image }}" alt="Detected Image" class="img-fluid mx-auto d-block">
+    </div>
+
+    {% if products %}
+    <h3>Products from Meesho</h3>
+    <ul class="list-unstyled">
+        {% for item, item_products in products['meesho'].items() %}
+        <li>
+            <h4 style="text-transform: capitalize;">{{ item }}</h4>
+            <a href="https://meesho.com/search?q={{ item|urlencode }}" target="_blank" class="btn btn-info mb-2">See all {{ item }}</a>
+            <p>
+                <a href="https://meesho.com/search?q={{ item|urlencode }}" target="_blank" style="color: #ffcc00; text-decoration: underline;">
+                    https://meesho.com/search?q={{ item|urlencode }}
+                </a>
+            </p>
+
+            <div class="row">
+                {% for product in item_products %}
+                <div class="col-md-4">
+                    <div class="card product-card">
+                        <div class="card-body d-flex align-items-start">
+                            <div class="mr-3">
+                                <h5 style="color: #e66465;">{{ product.name|capitalize }}</h5>
+                                <p style="color: #007bff;">{{ product.price }}</p>
+                                <a href="{{ product.link }}" target="_blank" class="btn btn-success">View Product</a>
+                                <p><a href="https://meesho.com/search?q={{ item|urlencode }}" target="_blank" style="color: #fff;">See all related products</a></p>
+                            </div>
+                            <img src="{{ product.image }}" alt="{{ product.name }}" class="product-image">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h3>Products from Amazon</h3>
+    <ul class="list-unstyled">
+        {% for item, item_products in products['amazon'].items() %}
+        <li>
+            <h4 style="text-transform: capitalize;">{{ item }}</h4>
+            <a href="https://www.amazon.in/s?k={{ item|urlencode }}" target="_blank" class="btn btn-info mb-2">See all {{ item }}</a>
+            <p>
+                <a href="https://www.amazon.in/s?k={{ item|urlencode }}" target="_blank" style="color: #ffcc00; text-decoration: underline;">
+                    https://www.amazon.in/s?k={{ item|urlencode }}
+                </a>
+            </p>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h3>Products from Flipkart</h3>
+    <ul class="list-unstyled">
+        {% for item, item_products in products['flipkart'].items() %}
+        <li>
+            <h4 style="text-transform: capitalize;">{{ item }}</h4>
+            <a href="https://www.flipkart.com/search?q={{ item|urlencode }}" target="_blank" class="btn btn-info mb-2">See all {{ item }}</a>
+            <p>
+                <a href="https://www.flipkart.com/search?q={{ item|urlencode }}" target="_blank" style="color: #ffcc00; text-decoration: underline;">
+                    https://www.flipkart.com/search?q={{ item|urlencode }}
+                </a>
+            </p>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% else %}
+    <p class="text-danger text-center">No products found.</p>
+    {% endif %}
+    {% endif %}
+</div> <!-- End of container -->
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
